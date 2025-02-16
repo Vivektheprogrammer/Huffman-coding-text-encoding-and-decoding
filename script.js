@@ -137,7 +137,7 @@ function decompressFile() {
     })
     .then(response => response.blob())
     .then(blob => {
-        progressBar.value = 100; // ✅ Progress bar update
+        progressBar.value = 100; // Progress bar update
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -153,9 +153,10 @@ function decompressFile() {
     });
 }
 
-// ✅ Decode function
+// Decode function
 function decodeMessage() {
     const encodedText = document.getElementById("encodedMessage").value.trim();
+    const decodedOutput = document.getElementById("decodedOutput");
 
     if (!encodedText) {
         alert("⚠️ Please enter an encoded message.");
@@ -170,13 +171,16 @@ function decodeMessage() {
     .then(response => response.json())
     .then(data => {
         if (data.decoded_message) {
-            document.getElementById("decodedOutput").innerText = "Decoded Message: " + data.decoded_message;
+            decodedOutput.innerText = "Decoded Message: " + data.decoded_message;
+            decodedOutput.style.display = "block"; // Show the black box
         } else {
+            decodedOutput.style.display = "none"; // Hide the black box if decoding fails
             alert("Decoding failed.");
         }
     })
     .catch(error => {
         console.error("Error:", error);
+        decodedOutput.style.display = "none"; // Hide the black box on error
         alert("Something went wrong.");
     });
 }
