@@ -110,18 +110,27 @@ def encode_and_send():
         return response
 
     data = request.json
-    if "email" not in data or "encoded_message" not in data:
-        return jsonify({"error": "Email and encoded message required"}), 400
+    if "message" not in data or "email" not in data:
+        return jsonify({"error": "Message and recipient email are required"}), 400
 
     recipient_email = data["email"]
-    encoded_message = data["encoded_message"]
+    message = data["message"]
 
+    # Run the encoding subprocess
+    encoded_message = subprocess.run(["encode.exe", message], capture_output=True, text=True)
+
+    if encoded_message.returncode != 0:
+        return jsonify({"error": "Encoding failed"}), 500
+
+    encoded_text = encoded_message.stdout.strip()
+
+    # Send encoded message via email
     try:
         msg = MIMEMultipart()
         msg["From"] = EMAIL_ADDRESS
         msg["To"] = recipient_email
         msg["Subject"] = "Your Encoded Message"
-        msg.attach(MIMEText(f"{encoded_message}", "plain"))
+        msg.attach(MIMEText(f"Here is your encoded message:\n\n{encoded_text}", "plain"))
 
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
         server.starttls()
@@ -129,9 +138,10 @@ def encode_and_send():
         server.sendmail(EMAIL_ADDRESS, recipient_email, msg.as_string())
         server.quit()
 
-        return jsonify({"success": True})  # ✅ Ensure success key is boolean
+        return jsonify({"success": True, "encoded_message": encoded_text})  # ✅ Return encoded message as well
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 
 if __name__ == "__main__":

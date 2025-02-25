@@ -13,57 +13,35 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function encodeAndSendMessage() {
-    const emailInput = document.getElementById("emailInput").value.trim();
-    const messageInput = document.getElementById("messageInput").value.trim();
+    const message = document.getElementById("messageInput").value;
+    const email = document.getElementById("emailInput").value;
     const statusMessage = document.getElementById("statusMessage");
 
-    // Ensure statusMessage exists before using it
-    if (!statusMessage) {
-        console.error("❌ Element with ID 'statusMessage' not found.");
+    if (!message || !email) {
+        statusMessage.innerText = "Please enter a message and recipient email.";
         return;
     }
 
-    // Reset previous status message
-    statusMessage.textContent = "";
-    statusMessage.style.color = "black";
-
-    if (!emailInput || !messageInput) {
-        statusMessage.textContent = "⚠️ Please enter both an email and a message.";
-        statusMessage.style.color = "red";
-        return;
-    }
-
-    fetch("http://127.0.0.1:5000/encode", {
+    fetch("http://localhost:5000/encode_and_send", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: messageInput })
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message, email })
     })
     .then(response => response.json())
     .then(data => {
-        if (!data.encoded_message) throw new Error("Encoding failed.");
-        
-        return fetch("http://127.0.0.1:5000/encode_and_send", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: emailInput, encoded_message: data.encoded_message })
-        });
-    })
-    .then(response => response.json()) 
-    .then(data => {
-        if (data.success || data.message === "Email sent successfully") {
-            statusMessage.textContent = "✅ Email sent successfully!";
-            statusMessage.style.color = "green";
+        if (data.success) {
+            statusMessage.innerHTML = `✅ Message sent successfully! <br><strong>Encoded Message:</strong> ${data.encoded_message}`;
         } else {
-            statusMessage.textContent = "⚠️ Email sending failed.";
-            statusMessage.style.color = "red";
+            statusMessage.innerText = `❌ Error: ${data.error}`;
         }
     })
     .catch(error => {
-        console.error("Error:", error);
-        statusMessage.textContent = "❌ Something went wrong. Please try again.";
-        statusMessage.style.color = "red";
+        statusMessage.innerText = `❌ Failed to send message: ${error}`;
     });
 }
+
 
 // Ensure script runs after the page loads
 window.onload = function() {
@@ -82,15 +60,16 @@ function updateFileStatus(event) {
 }
 
 // ✅ File Compression function
+// ✅ File Compression function
 function compressFile() {
-    const fileInput = document.getElementById("fileInput").files[0];
-    if (!fileInput) {
+    const fileInput = document.getElementById("fileInput");
+    if (!fileInput.files.length) {
         alert("⚠️ Please select a file first.");
         return;
     }
 
     const formData = new FormData();
-    formData.append("file", fileInput);
+    formData.append("file", fileInput.files[0]);
 
     const progressBar = document.getElementById("progressBar");
     progressBar.value = 10;
@@ -105,11 +84,15 @@ function compressFile() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = fileInput.name + ".huff";
+        a.download = fileInput.files[0].name + ".huff";
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         alert("✅ File compressed successfully!");
+
+        // ✅ Clear file input
+        fileInput.value = "";
+        document.getElementById("status").innerText = "No file selected";
     })
     .catch(error => {
         console.error("Error:", error);
@@ -119,14 +102,14 @@ function compressFile() {
 
 // ✅ File Decompression function
 function decompressFile() {
-    const fileInput = document.getElementById("fileInput").files[0];
-    if (!fileInput) {
+    const fileInput = document.getElementById("fileInput");
+    if (!fileInput.files.length) {
         alert("⚠️ Please select a file first.");
         return;
     }
 
     const formData = new FormData();
-    formData.append("file", fileInput);
+    formData.append("file", fileInput.files[0]);
 
     const progressBar = document.getElementById("progressBar");
     progressBar.value = 10;
@@ -137,50 +120,22 @@ function decompressFile() {
     })
     .then(response => response.blob())
     .then(blob => {
-        progressBar.value = 100; // Progress bar update
+        progressBar.value = 100; // ✅ Progress bar update
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = fileInput.name.replace(".huff", "");
+        a.download = fileInput.files[0].name.replace(".huff", "");
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         alert("✅ File decompressed successfully!");
+
+        // ✅ Clear file input
+        fileInput.value = "";
+        document.getElementById("status").innerText = "No file selected";
     })
     .catch(error => {
         console.error("Error:", error);
         alert("⚠️ Decompression failed. Please try again.");
-    });
-}
-
-// Decode function
-function decodeMessage() {
-    const encodedText = document.getElementById("encodedMessage").value.trim();
-    const decodedOutput = document.getElementById("decodedOutput");
-
-    if (!encodedText) {
-        alert("⚠️ Please enter an encoded message.");
-        return;
-    }
-
-    fetch("http://127.0.0.1:5000/decode", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ encoded_message: encodedText })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.decoded_message) {
-            decodedOutput.innerText = "Decoded Message: " + data.decoded_message;
-            decodedOutput.style.display = "block"; // Show the black box
-        } else {
-            decodedOutput.style.display = "none"; // Hide the black box if decoding fails
-            alert("Decoding failed.");
-        }
-    })
-    .catch(error => {
-        console.error("Error:", error);
-        decodedOutput.style.display = "none"; // Hide the black box on error
-        alert("Something went wrong.");
     });
 }
