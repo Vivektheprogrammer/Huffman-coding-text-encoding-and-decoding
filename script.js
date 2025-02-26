@@ -66,7 +66,7 @@ function compressFile() {
     const progressBar = document.getElementById("progressBar");
     progressBar.value = 10;
 
-    fetch("http://127.0.0.1:5000/compress", {
+    fetch("https://vivekr-huffman-coding-text-encoding-and-decoding.vercel.app/compress", {
         method: "POST",
         body: formData
     })
