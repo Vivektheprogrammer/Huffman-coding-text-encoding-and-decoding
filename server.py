@@ -1,23 +1,36 @@
 import os
 import subprocess
 import smtplib
-from flask import Flask, request, jsonify, send_file, make_response
+from flask import Flask, request, jsonify, send_file, make_response, send_from_directory
 from werkzeug.utils import secure_filename
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
 
-load_dotenv()  # Load environment variables from .env
-
+# Initialize Flask app
 app = Flask(__name__)
 CORS(app)  # Apply CORS globally to all routes
 
+# Serve index.html at the root URL
+@app.route("/")
+def serve_index():
+    return send_from_directory(".", "index.html")
+
+# Serve static files (CSS, JS, etc.)
+@app.route("/<path:path>")
+def serve_static(path):
+    return send_from_directory(".", path)
+
+# Load environment variables
+load_dotenv()
+
+# Configure upload folder
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
+# SMTP configuration
 SMTP_SERVER = os.getenv("SMTP_SERVER")
 SMTP_PORT = int(os.getenv("SMTP_PORT"))
 EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
@@ -147,10 +160,8 @@ def encode_and_send():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
 
+# Vercel handler for serverless functions
 def vercel_handler(event, context):
     from flask import Request
     from werkzeug.wrappers import Response
@@ -159,3 +170,6 @@ def vercel_handler(event, context):
         request = Request(event)
         response = app.full_dispatch_request(request)
         return response.get_data()
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
