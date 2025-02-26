@@ -150,3 +150,12 @@ def encode_and_send():
     
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
+
+def vercel_handler(event, context):
+    from flask import Request
+    from werkzeug.wrappers import Response
+
+    with app.app_context():
+        request = Request(event)
+        response = app.full_dispatch_request(request)
+        return response.get_data()
