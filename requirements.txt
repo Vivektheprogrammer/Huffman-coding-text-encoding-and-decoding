@@ -6,3 +6,4 @@ matplotlib
 Pillow
 email-validator
 gunicorn
+python-dotenv==1.0.0
