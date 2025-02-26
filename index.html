@@ -27,11 +27,12 @@
             <h3>Try Sending a Secret Message</h3>
             <textarea id="messageInput" placeholder="Enter your message..."></textarea>
             <input type="email" id="emailInput" placeholder="Recipient email">
-            <button onclick="encodeAndSendMessage()">Encode & Send</button>
-            <p id="statusMessage"></p>
-
-            <h3>Decode a Secret  Message Received</h3>
-            <textarea id="encodedMessage" placeholder="Paste encoded message..."></textarea>
+            <button onclick="encodeAndSendMessage()" id="sendButton">Encode & Send</button>
+            <p id="statusMessage"></p>    
+            <p id="encodedOutput" ></p>
+        
+            <h3>Decode a Secret Message Received</h3>
+            <textarea id="encodedMessage" placeholder="Paste encoded message here..."></textarea>
             <button onclick="decodeMessage()">Decode</button>
             <p id="decodedOutput"></p>
         </div>

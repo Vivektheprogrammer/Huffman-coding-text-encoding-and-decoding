@@ -12,44 +12,37 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-function encodeAndSendMessage() {
-    const message = document.getElementById("messageInput").value;
-    const email = document.getElementById("emailInput").value;
-    const statusMessage = document.getElementById("statusMessage");
+function decodeMessage() {
+    const encodedText = document.getElementById("encodedMessage").value.trim();
+    const decodedOutput = document.getElementById("decodedOutput");
 
-    if (!message || !email) {
-        statusMessage.innerText = "Please enter a message and recipient email.";
+    if (!encodedText) {
+        alert("⚠️ Please enter an encoded message.");
         return;
     }
 
-    fetch("http://localhost:5000/encode_and_send", {
+    fetch("http://127.0.0.1:5000/decode", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ message, email })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ encoded_message: encodedText })
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success) {
-            statusMessage.innerHTML = `✅ Message sent successfully! <br><strong>Encoded Message:</strong> ${data.encoded_message}`;
+        if (data.decoded_message) {
+            decodedOutput.innerText = "Decoded Message: " + data.decoded_message;
+            decodedOutput.style.display = "block";  // ✅ Ensure visibility
         } else {
-            statusMessage.innerText = `❌ Error: ${data.error}`;
+            decodedOutput.innerText = "Decoding failed.";
+            decodedOutput.style.display = "block";  // ✅ Show even if failed
+            alert("Decoding failed.");
         }
     })
     .catch(error => {
-        statusMessage.innerText = `❌ Failed to send message: ${error}`;
+        console.error("Error:", error);
+        alert("Something went wrong.");
     });
 }
 
-
-// Ensure script runs after the page loads
-window.onload = function() {
-    document.getElementById("sendButton").onclick = encodeAndSendMessage;
-};
-
-
-    
 
 // ✅ Function to handle file selection
 function updateFileStatus(event) {
@@ -59,7 +52,6 @@ function updateFileStatus(event) {
     }
 }
 
-// ✅ File Compression function
 // ✅ File Compression function
 function compressFile() {
     const fileInput = document.getElementById("fileInput");
@@ -139,3 +131,45 @@ function decompressFile() {
         alert("⚠️ Decompression failed. Please try again.");
     });
 }
+function encodeAndSendMessage() {
+    const recipientEmail = document.getElementById("emailInput").value.trim();
+    const message = document.getElementById("messageInput").value.trim();
+    const statusMessage = document.getElementById("statusMessage");
+    const encodedOutput = document.getElementById("encodedOutput"); // <p> element
+
+    if (!message || !recipientEmail) {
+        alert("⚠️ Please enter both a message and recipient email.");
+        return;
+    }
+
+    fetch("http://127.0.0.1:5000/encode_and_send", {
+        method: "POST",
+        mode: "cors",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            email: recipientEmail,
+            message: message  // Send the original message for encoding
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("✅ Encoded message sent successfully!");
+            statusMessage.innerText = "Message sent successfully!";
+
+            // Display the encoded message in the <p> element
+            encodedOutput.innerText = "" + data.encoded_message;
+            encodedOutput.style.display = "block"; // Ensure the <p> is visible
+        } else {
+            alert("⚠️ Error sending message: " + data.error);
+            statusMessage.innerText = "Error: " + data.error;
+        }
+    })
+    .catch(error => {
+        console.error("Fetch Error:", error);
+        alert("⚠️ Network error. Check server logs.");
+    });
+}
+
