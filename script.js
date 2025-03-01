@@ -21,7 +21,7 @@ function decodeMessage() {
         return;
     }
 
-    fetch("https://vivekr-huffman-coding-text-encoding-and-decoding.vercel.app/decode", {
+    fetch("http://127.0.0.1:5000/decode", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ encoded_message: encodedText })
@@ -66,7 +66,7 @@ function compressFile() {
     const progressBar = document.getElementById("progressBar");
     progressBar.value = 10;
 
-    fetch("https://vivekr-huffman-coding-text-encoding-and-decoding.vercel.app/compress", {
+    fetch("http://127.0.0.1:5000/compress", {
         method: "POST",
         body: formData
     })
@@ -106,7 +106,7 @@ function decompressFile() {
     const progressBar = document.getElementById("progressBar");
     progressBar.value = 10;
 
-    fetch("https://vivekr-huffman-coding-text-encoding-and-decoding.vercel.app/decompress", {
+    fetch("http://127.0.0.1:5000/decompress", {
         method: "POST",
         body: formData
     })
@@ -142,7 +142,7 @@ function encodeAndSendMessage() {
         return;
     }
 
-    fetch("https://vivekr-huffman-coding-text-encoding-and-decoding.vercel.app/encode_and_send", {
+    fetch("http://127.0.0.1:5000/encode_and_send", {
         method: "POST",
         mode: "cors",
         headers: {
